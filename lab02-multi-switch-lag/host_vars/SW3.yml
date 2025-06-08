@@ -1,0 +1,40 @@
+hostname: SW3
+
+# Management interface
+mgmt_ip: 192.168.2.13
+mgmt_mask: 255.255.255.0
+
+# Port-channel configurations for SW3
+port_channels:
+  # SW3 to SW2 - PAgP Auto
+  - id: 2
+    description: "PAgP Bundle to SW2"
+    mode: auto
+    protocol: pagp
+    members:
+      - interface: GigabitEthernet0/1
+        description: "PAgP to SW2 - Member 1"
+      - interface: GigabitEthernet0/2
+        description: "PAgP to SW2 - Member 2"
+
+  # SW3 to SW1 - Manual/Static
+  - id: 3
+    description: "Static Bundle to SW1"
+    mode: "on"
+    protocol: none
+    members:
+      - interface: GigabitEthernet0/3
+        description: "Static to SW1 - Member 1"
+      - interface: GigabitEthernet1/0
+        description: "Static to SW1 - Member 2"
+
+# Spanning tree priorities (SW3 is tertiary)
+stp_priorities:
+  - vlan: 10
+    priority: 12288
+  - vlan: 20
+    priority: 12288
+  - vlan: 30
+    priority: 12288
+  - vlan: 99
+    priority: 12288

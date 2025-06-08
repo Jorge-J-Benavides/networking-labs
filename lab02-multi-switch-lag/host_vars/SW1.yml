@@ -1,0 +1,47 @@
+hostname: SW1
+
+# Management interface
+mgmt_ip: 192.168.2.11
+mgmt_mask: 255.255.255.0
+
+# Port-channel configurations for SW1
+port_channels:
+  # SW1 to SW2 - LACP Active
+  - id: 1
+    description: "LACP Bundle to SW2"
+    mode: active
+    protocol: lacp
+    members:
+      - interface: GigabitEthernet0/1
+        description: "LACP to SW2 - Member 1"
+      - interface: GigabitEthernet0/2
+        description: "LACP to SW2 - Member 2"
+
+  # SW1 to SW3 - Manual/Static
+  - id: 3
+    description: "Static Bundle to SW3"
+    mode: "on"
+    protocol: none
+    members:
+      - interface: GigabitEthernet0/3
+        description: "Static to SW3 - Member 1"
+      - interface: GigabitEthernet1/0
+        description: "Static to SW3 - Member 2"
+
+# Access ports
+access_ports:
+  - interface: GigabitEthernet1/1
+    vlan: 10
+    description: "PC1 - Test Device"
+    portfast: true
+
+# Spanning tree priorities (SW1 is root)
+stp_priorities:
+  - vlan: 10
+    priority: 4096
+  - vlan: 20
+    priority: 4096
+  - vlan: 30
+    priority: 4096
+  - vlan: 99
+    priority: 4096

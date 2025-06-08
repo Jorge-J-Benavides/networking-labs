@@ -1,0 +1,33 @@
+---
+
+# Common switch configuration
+domain_name: lab.local
+
+# Management configuration
+management:
+  interface: GigabitEthernet0/0
+  vlan: 99
+  description: "Out-of-Band Management"
+
+# VLAN Configuration
+vlans:
+  - id: 10
+    name: "Users"
+  - id: 20
+    name: "Servers"
+  - id: 30
+    name: "Voice"
+  - id: 99
+    name: "Management"
+
+# Global EtherChannel load balancing
+load_balance_method: "src-dst-ip"
+
+# Spanning Tree Configuration
+stp_mode: rapid-pvst
+stp_root_primary: 1    # SW1 is root bridge
+stp_root_secondary: 2  # SW2 is secondary root
+
+# Common trunk VLANs
+trunk_vlans: "10,20,30"
+native_vlan: 99

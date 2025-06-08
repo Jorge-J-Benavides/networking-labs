@@ -1,0 +1,115 @@
+---
+- name: Deploy Multi-Switch LAG Configuration
+  hosts: switches
+  gather_facts: false
+
+  tasks:
+    - name: Configure hostname
+      cisco.ios.ios_config:
+        lines:
+          - "hostname {{ hostname }}"
+
+    - name: Configure VLANs
+      cisco.ios.ios_config:
+        lines:
+          - "vlan {{ item.id }}"
+          - "name {{ item.name }}"
+      loop: "{{ vlans }}"
+
+    - name: Configure management interface
+      cisco.ios.ios_config:
+        parents: "interface {{ management.interface }}"
+        lines:
+          - "description {{ management.description }}"
+          - "switchport mode access"
+          - "switchport access vlan {{ management.vlan }}"
+          - "no shutdown"
+
+    - name: Configure management VLAN interface
+      cisco.ios.ios_config:
+        parents: "interface vlan{{ management.vlan }}"
+        lines:
+          - "description Management Interface"
+          - "ip address {{ mgmt_ip }} {{ mgmt_mask }}"
+          - "no shutdown"
+
+    - name: Configure default gateway
+      cisco.ios.ios_config:
+        lines:
+          - "ip default-gateway {{ mgmt_gateway }}"
+
+    - name: Configure global load balancing
+      cisco.ios.ios_config:
+        lines:
+          - "port-channel load-balance {{ load_balance_method }}"
+
+    - name: Create port-channel interfaces
+      cisco.ios.ios_config:
+        parents: "interface port-channel{{ item.id }}"
+        lines:
+          - "description {{ item.description }}"
+          - "switchport trunk encapsulation dot1q"
+          - "switchport mode trunk"
+          - "switchport trunk allowed vlan {{ trunk_vlans }}"
+          - "switchport trunk native vlan {{ native_vlan }}"
+      loop: "{{ port_channels }}"
+
+    - name: Configure port-channel member interfaces
+      cisco.ios.ios_config:
+        parents: "interface {{ member.1.interface }}"
+        lines:
+          - "description {{ member.1.description }}"
+          - "switchport trunk encapsulation dot1q"
+          - "switchport mode trunk"
+          - "switchport trunk allowed vlan {{ trunk_vlans }}"
+          - "switchport trunk native vlan {{ native_vlan }}"
+          - "{% if item.protocol == 'lacp' %}channel-protocol lacp{% endif %}"
+          - "{% if item.protocol == 'pagp' %}channel-protocol pagp{% endif %}"
+          - "channel-group {{ item.id }} mode {{ item.mode }}"
+          - "no shutdown"
+      loop: "{{ port_channels | subelements('members') }}"
+      loop_control:
+        loop_var: member
+        index_var: member_index
+      vars:
+        item: "{{ member.0 }}"
+
+    - name: Configure access ports
+      cisco.ios.ios_config:
+        parents: "interface {{ item.interface }}"
+        lines:
+          - "description {{ item.description }}"
+          - "switchport mode access"
+          - "switchport access vlan {{ item.vlan }}"
+          - "{% if item.portfast %}spanning-tree portfast{% endif %}"
+          - "no shutdown"
+      loop: "{{ access_ports | default([]) }}"
+
+    - name: Configure spanning tree mode
+      cisco.ios.ios_config:
+        lines:
+          - "spanning-tree mode {{ stp_mode }}"
+
+    - name: Configure spanning tree priorities
+      cisco.ios.ios_config:
+        lines:
+          - "spanning-tree vlan {{ item.vlan }} priority {{ item.priority }}"
+      loop: "{{ stp_priorities }}"
+
+    - name: Enable SSH and management features
+      cisco.ios.ios_config:
+        lines:
+          - "ip domain-name {{ domain_name }}"
+          - "ip ssh version 2"
+          - "line vty 0 15"
+          - "transport input ssh"
+          - "login local"
+
+    - name: Save configuration
+      cisco.ios.ios_config:
+        save_when: always
+
+    - name: Wait for EtherChannel convergence
+      ansible.builtin.pause:
+        seconds: 45
+        prompt: "Waiting for all EtherChannel protocols to converge..."

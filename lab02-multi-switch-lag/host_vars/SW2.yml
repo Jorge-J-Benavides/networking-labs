@@ -1,0 +1,42 @@
+---
+
+hostname: SW2
+
+# Management interface
+mgmt_ip: 192.168.2.12
+mgmt_mask: 255.255.255.0
+
+# Port-channel configurations for SW2
+port_channels:
+  # SW2 to SW1 - LACP Active
+  - id: 1
+    description: "LACP Bundle to SW1"
+    mode: active
+    protocol: lacp
+    members:
+      - interface: GigabitEthernet0/1
+        description: "LACP to SW1 - Member 1"
+      - interface: GigabitEthernet0/2
+        description: "LACP to SW1 - Member 2"
+
+  # SW2 to SW3 - PAgP Desirable
+  - id: 2
+    description: "PAgP Bundle to SW3"
+    mode: desirable
+    protocol: pagp
+    members:
+      - interface: GigabitEthernet0/3
+        description: "PAgP to SW3 - Member 1"
+      - interface: GigabitEthernet1/0
+        description: "PAgP to SW3 - Member 2"
+
+# Spanning tree priorities (SW2 is secondary root)
+stp_priorities:
+  - vlan: 10
+    priority: 8192
+  - vlan: 20
+    priority: 8192
+  - vlan: 30
+    priority: 8192
+  - vlan: 99
+    priority: 8192
