@@ -1,0 +1,38 @@
+---
+# Simple Router Configuration Backup
+# Just grab show run and save as R1-config, R2-config, etc.
+# Run with: ansible-playbook -i inventory.yml deploy.yml -v --vault-password-file /Users/jorgebenavides/.ansible_vault_pass
+
+- name: Simple Router Config Backup
+  hosts: routers
+  gather_facts: false
+  connection: network_cli
+
+  tasks:
+    - name: Create device-configs directory
+      ansible.builtin.file:
+        path: ./device-configs
+        state: directory
+        mode: '0755'
+      delegate_to: localhost
+
+    - name: Get running configuration
+      cisco.ios.ios_command:
+        commands:
+          - show running-config
+      register: config_output
+
+    - name: Save config to file
+      ansible.builtin.copy:
+        content: "{{ config_output.stdout[0] }}"
+        dest: "./device-configs/{{ inventory_hostname }}-config"
+        mode: '0600'
+      delegate_to: localhost
+
+    - name: Save running config to startup config on device
+      cisco.ios.ios_config:
+        save_when: always
+
+    - name: Display completion message
+      ansible.builtin.debug:
+        msg: "Configuration saved for {{ inventory_hostname }} -> device-configs/{{ inventory_hostname }}-config and startup-config updated on device"
