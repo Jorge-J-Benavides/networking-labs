@@ -11,9 +11,6 @@ The lab consists of 8 routers (R1-R8) interconnected in a multi-area OSPFv3 topo
 ## Lab Topology
 ![alt text](image-1.png)
 
-## Management Topology
-![alt text](image-2.png)
-
 ### OSPF Areas
 - **Area 0 (Backbone)**: R1, R2, R3, R4
 - **Area 1**: R3, R5, R7
