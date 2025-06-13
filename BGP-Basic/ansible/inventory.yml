@@ -1,0 +1,39 @@
+---
+
+# Simple inventory.yml - YAML format
+all:
+  children:
+    routers:
+      hosts:
+        R1:
+          ansible_host: 192.168.2.11
+        R2:
+          ansible_host: 192.168.2.12
+        R3:
+          ansible_host: 192.168.2.13
+        R4:
+          ansible_host: 192.168.2.14
+        R5:
+          ansible_host: 192.168.2.15
+        R6:
+          ansible_host: 192.168.2.16
+        R7:
+          ansible_host: 192.168.2.17
+        R8:
+          ansible_host: 192.168.2.18
+        R9:
+          ansible_host: 192.168.2.19
+        R10:
+          ansible_host: 192.168.2.20
+      vars:
+        ansible_connection: network_cli
+        ansible_network_os: ios
+        ansible_user: admin
+        ansible_ssh_pass: !vault |
+            $ANSIBLE_VAULT;1.1;AES256
+            34313439663465343732373837303930666562303836643434663337393264363937666433306539
+            3263323863633433643765376237626163373639636535630a366535663966616534376435633032
+            64376462656462633465613031333838653131353665346630663661356135373866333639646433
+            3437376533383761390a326636306364376634356466313261313232653534303238373630643161
+            3032
+        ansible_ssh_common_args: '-o StrictHostKeyChecking=no'
